@@ -1,1 +1,0 @@
-export const hello = (name: string) => console.log(`Ayo wsg ${name}`);
