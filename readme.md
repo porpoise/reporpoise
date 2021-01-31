@@ -1,29 +1,30 @@
 # Reporpoise
 
+## HTML:
+
 ```html
-<h1>The Classic Counter :D</h1>
+<div id="app">
+    <h1>The Classic Counter :D</h1>
 
-<input id="countDisplay" />
+    <input r r-model="count" />
 
-<button id="increaseCount">+</button>
-<button id="decreaseCount">-</button>
+    <button r @click="increaseCount">+</button>
+    <button r @click="decreaseCount">-</button>
+</div>
 ```
 
-```ts
+## JavaScript:
+
+```js
 import { Model, query } from "reporpoise";
 
 // Initialize data store:
 const store = new Model({
     count: 0
+}, {
+    increaseCount: data => data.count++,
+    decreaseCount: data => data.count--
 });
 
-// Reactively display count:
-store.twoWayBind("count")("#countDisplay");
-
-// Event handling:
-query("#increaseCount")
-    .addEventListener("click", () => store.data.count++);
-
-query("#decreaseCount")
-    .addEventListener("click", () => store.data.count--);
+store.mount(query("#app"));
 ```
