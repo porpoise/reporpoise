@@ -17,9 +17,6 @@ const store = new Model({
     count: 0
 });
 
-// Create dynamic area property:
-store.watch(data => data.area = data.width * data.height);
-
 // Reactively display count:
 store.twoWayBind("count")("#countDisplay");
 
