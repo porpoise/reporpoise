@@ -8,16 +8,19 @@ export function stateful<T extends object = object>(initial: T): T {
     Object.entries(initial).forEach(([key, value]) => {
         // Add to state:
         internalState[key] = value;
-
-        // Create dependency set:
-        dependencies[key] = new Set<Function>();
     });
 
     return new Proxy(internalState, {
         get(target, key: string) {
+            // Make sure dependency array exists:
+            if (!(dependencies[key] instanceof Set)) {
+                dependencies[key] = new Set<Function>();
+            }
+
             // Add dependency:
             const handler = getDependentHandler();
             if (typeof handler === "function") {
+
                 dependencies[key].add(handler);
             }
 

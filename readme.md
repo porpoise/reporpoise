@@ -1,55 +1,32 @@
-# RePorpoise
+# Reporpoise
 
-```tsx
-import {
-    compute, //
-    component, // create component
-    h, markup // h for JSX, markup for string
-} from "reporpoise";
+```html
+<h1>The Classic Counter :D</h1>
 
-export const GreetingDisplay = component<IProps, IData>((props, options) => ({
-    data: {
-        name: () => props.name,
-        language: () => props.language,
+<input id="countDisplay" />
 
-        greeting: compute(data => {
-            switch(data.language) {
-                case "American":
-                    return "What's poppin";
-
-                case "Britain":
-                    return "Good day";
-
-                default:
-                    return "Hello";
-            }
-        })
-    },
-
-
-    render: data => (
-        <h1>{() => `${data.greeting} ${data.name}`}</h1>
-    ),
-}));
+<button id="increaseCount">+</button>
+<button id="decreaseCount">-</button>
 ```
- 
+
 ```ts
-import { stateful, watchful } from "reporpoise";
+import { Model, query } from "reporpoise";
 
-const data = stateful({
-    // Standard property:
-    name: "Reporpoise",
-
-    // Functions become dynamic values:
-    greeting: current => `Hello, ${current.name}!`;
+// Initialize data store:
+const store = new Model({
+    count: 0
 });
 
-console.log(data.name); // "Reporpoise"
-console.log(data.greeting) // "Hello, Reporpoise!"
+// Create dynamic area property:
+store.watch(data => data.area = data.width * data.height);
 
-data.name = "Big Shaq";
+// Reactively display count:
+store.twoWayBind("count")("#countDisplay");
 
-console.log(data.greeting) // "Hello, Big Shaq!"
+// Event handling:
+query("#increaseCount")
+    .addEventListener("click", () => store.data.count++);
 
-/* greeting depends on name, and auto-updates when name changes */
-``` 
+query("#decreaseCount")
+    .addEventListener("click", () => store.data.count--);
+```

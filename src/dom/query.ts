@@ -1,0 +1,1 @@
+export const query = (selector: string) => document.querySelector(selector);
