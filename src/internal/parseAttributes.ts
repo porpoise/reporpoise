@@ -3,14 +3,13 @@ import { getNodeAttributes } from "./getNodeAttributes";
 
 export function parseAttributes<T extends object>(el: HTMLElement, model: Model<T>) {
     const attributes = getNodeAttributes(el);
-    console.log({ el, attributes });
 
     Object.entries(attributes).forEach(([key, value]) => {
         let removeAttribute = true;
 
         if (key.startsWith("@")) {
             const eventName = key.replace("@", "").trim();
-            el.addEventListener(eventName, () => model.methods[value]());
+            el.addEventListener(eventName, e => model.methods[value](e));
         }
 
         else if (key.startsWith(":")) {

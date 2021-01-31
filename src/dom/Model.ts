@@ -2,15 +2,35 @@ import { mountModel } from "../internal/mountModel";
 import { stateful } from "../reactivity/stateful";
 import { watchful } from "../reactivity/watchful";
 
+interface IModelConfig<T> {
+    data: T;
+    methods: Record<string, (data: T, e?: Event) => any>;
+}
+
 export class Model<T extends object> {
     data: T;
-    methods: Record<string, () => any> = {};
+    methods: Record<string, (e?: Event) => any> = {};
 
-    constructor(data: T, methods: Record<string, (data: T) => any> = {}) {
-        this.data = stateful<T>(data);
+    constructor({ data, methods }: IModelConfig<T>) {
+        const staticData: T = Object.create(null);
+        const dynamicProperties: string[] = [];
+        Object.entries(data).forEach(([key, value]) => {
+            if (typeof value === "function") {
+                dynamicProperties.push(key);
+            }
+            else {
+                staticData[key as keyof T] = value;
+            }
+        });
+
+        this.data = stateful<T>(staticData);
+
+        dynamicProperties.forEach(key => {  
+            watchful(() => this.data[key as keyof T] = (data[key as keyof T] as any)(this.data));
+        });
         
-        Object.entries(methods).forEach(([name, method]) => {
-            this.methods[name] = () => method(this.data);
+        Object.entries(methods || {}).forEach(([name, method]) => {
+            this.methods[name] = (e?: Event) => method(this.data, e);
         });
     }
 
