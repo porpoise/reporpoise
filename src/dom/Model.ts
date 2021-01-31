@@ -16,8 +16,17 @@ export class Model<T extends object> {
 
     oneWayBind(prop: keyof T) {
         return (el: HTMLElement, elementProp: string) => {
+            if (elementProp === "r-text") {
+                watchful(() => (el as any).textContent = this.data[prop]);
+            }
 
-            watchful(() => el.setAttribute(elementProp, this.data[prop] as unknown as string));
+            else if (elementProp === "r-html") {
+                watchful(() => (el as any).innerHTML = this.data[prop]);
+            }
+
+            else {
+                watchful(() => el.setAttribute(elementProp, this.data[prop] as unknown as string));
+            }
         }
     }
 

@@ -28,3 +28,4 @@ const store = new Model({
 
 store.mount(query("#app"));
 ```
+
