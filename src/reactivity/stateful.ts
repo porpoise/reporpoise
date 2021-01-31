@@ -6,8 +6,14 @@ export function stateful<T extends object = object>(initial: T): T {
 
     // Loop over object:
     Object.entries(initial).forEach(([key, value]) => {
-        // Add to state:
-        internalState[key] = value;
+        if (typeof value === "object") {
+            internalState[key] = stateful(value);
+        }
+
+        else {
+            // Add to state:
+            internalState[key] = value;
+        }
     });
 
     return new Proxy(internalState, {
