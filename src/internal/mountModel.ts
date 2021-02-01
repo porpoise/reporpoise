@@ -1,3 +1,5 @@
+/* Mounting model to DOM target middleman function */
+
 import { Model } from "../dom/Model";
 import { parseAttributes } from "./parseAttributes";
 

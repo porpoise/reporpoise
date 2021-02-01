@@ -1,3 +1,5 @@
+/* Efficiently parse the attributes and make reactive bindings: */
+
 import { Model } from "../dom/Model";
 import { getNodeAttributes } from "./getNodeAttributes";
 

@@ -1,3 +1,5 @@
+/* parse Node.attributes into a clean key-value object */
+
 export function getNodeAttributes(el: HTMLElement): Record<string, string> {
     const attributes: Record<string, string> = Object.create(null);
 
