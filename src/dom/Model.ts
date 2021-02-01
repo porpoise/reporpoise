@@ -1,3 +1,4 @@
+import { ITemplateData, renderList } from "../internal/renderList";
 import { mountModel } from "../internal/mountModel";
 import { stateful } from "../reactivity/stateful";
 import { watchful } from "../reactivity/watchful";
@@ -58,8 +59,8 @@ export class Model<T extends object> {
         }
     }
 
-    listBind(template: HTMLTemplateElement) {
-
+    listBind(template: HTMLTemplateElement, templateData: ITemplateData) {
+        renderList<T>(this, template, templateData);
     }
 
     watch(handler: (data: T) => any) {
