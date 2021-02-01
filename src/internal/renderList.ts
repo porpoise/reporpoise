@@ -1,6 +1,6 @@
 import { watchful } from "../reactivity/watchful";
 import { Model } from "../dom/Model";
-import { list } from "src/reactivity/list";
+import { list } from "../reactivity/list";
 import { getNodeAttributes } from "./getNodeAttributes";
 
 export interface ITemplateData {
