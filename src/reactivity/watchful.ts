@@ -1,3 +1,5 @@
+/* Dependency tracking */
+
 let dependentHandler: Function | null = null;
 
 export function getDependentHandler() {

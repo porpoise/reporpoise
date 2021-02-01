@@ -85,14 +85,10 @@ export class Model<T extends object> {
         else {
             let nestedObject: any = this.data;
             nestedChunks.forEach((p, i) => {
-                console.log("Chunk", p);
-
                 if (i === nestedChunks.length - 1) {
-                    console.log("assign")
                     nestedObject[p as keyof T] = value;
                 }
                 else {
-                    console.log("nest");
                     nestedObject = nestedObject[p];
                 }
             });

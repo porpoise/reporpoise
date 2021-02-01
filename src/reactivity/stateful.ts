@@ -1,3 +1,6 @@
+/* Reactive/observable object */
+
+import { list } from "./list";
 import { getDependentHandler } from "./watchful";
 
 export function stateful<T extends object = object>(initial: T): T {
@@ -6,7 +9,11 @@ export function stateful<T extends object = object>(initial: T): T {
 
     // Loop over object:
     Object.entries(initial).forEach(([key, value]) => {
-        if (typeof value === "object") {
+        if (Array.isArray(value)) {
+            internalState[key] = list(...value);
+        }
+
+        else if (typeof value === "object") {
             internalState[key] = stateful(value);
         }
 
@@ -18,6 +25,10 @@ export function stateful<T extends object = object>(initial: T): T {
 
     return new Proxy(internalState, {
         get(target, key: string) {
+            if (key === "toString") {
+                return () => JSON.stringify(target);
+            }   
+
             // Make sure dependency array exists:
             if (!(dependencies[key] instanceof Set)) {
                 dependencies[key] = new Set<Function>();
@@ -39,12 +50,18 @@ export function stateful<T extends object = object>(initial: T): T {
                 dependencies[key] = new Set<Function>();
             }
 
-            if (typeof value === "object") {
+            if (Array.isArray(value)) {
+                target[key] = list(...value) as any;
+            }
+
+            else if (typeof value === "object") {
                 target[key] = stateful(value);
             }
 
-            // Modify value:
-            target[key] = value;
+            else {
+                // Modify value:
+                target[key] = value;
+            }
 
             // Call dependencies:
             dependencies[key].forEach(handler => handler());
