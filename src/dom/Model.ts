@@ -37,27 +37,26 @@ export class Model<T extends object> {
     oneWayBind(prop: keyof T) {
         return (el: HTMLElement, elementProp: string) => {
             if (elementProp === "r-text") {
-                watchful(() => (el as any).textContent = this.data[prop]);
+                watchful(() => (el as any).textContent = this.getValue(prop as string));
             }
 
             else if (elementProp === "r-html") {
-                watchful(() => (el as any).innerHTML = this.data[prop]);
+                watchful(() => (el as any).innerHTML = this.getValue(prop as string));
             }
 
             else {
-                watchful(() => el.setAttribute(elementProp, this.data[prop] as unknown as string));
+                watchful(() => el.setAttribute(elementProp, this.getValue(prop as string) as unknown as string));
             }
         }
     }
 
     twoWayBind(prop: keyof T) {
         return (el: HTMLInputElement) => {
-
             // Bind from store change:
-            watchful(() => (el as any).value = this.data[prop]);
+            watchful(() => (el as any).value = this.getValue(prop as string));
 
             // Bind from input change:
-            el.addEventListener("change", () => this.data[prop] = el.value as any);
+            el.addEventListener("change", () => this.setValue(prop as keyof T & string, el.value as any));
         }
     }
 
@@ -67,5 +66,36 @@ export class Model<T extends object> {
 
     mount(el: HTMLElement) {
         mountModel<T>(this, el);
+    }
+
+    getValue(prop: string) {
+        let value: any = this.data;
+        prop.split(".").forEach(p => value = value[p]);
+    
+        return value;
+    }
+
+    setValue(prop: keyof T & string, value: any) {
+        const nestedChunks = prop.split(".");
+
+        if (nestedChunks.length === 1) {
+            this.data[prop] = value;
+        }
+
+        else {
+            let nestedObject: any = this.data;
+            nestedChunks.forEach((p, i) => {
+                console.log("Chunk", p);
+
+                if (i === nestedChunks.length - 1) {
+                    console.log("assign")
+                    nestedObject[p as keyof T] = value;
+                }
+                else {
+                    console.log("nest");
+                    nestedObject = nestedObject[p];
+                }
+            });
+        }
     }
 }

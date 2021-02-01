@@ -39,6 +39,10 @@ export function stateful<T extends object = object>(initial: T): T {
                 dependencies[key] = new Set<Function>();
             }
 
+            if (typeof value === "object") {
+                target[key] = stateful(value);
+            }
+
             // Modify value:
             target[key] = value;
 
