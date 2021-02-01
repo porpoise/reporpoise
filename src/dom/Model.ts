@@ -35,13 +35,11 @@ export class Model<T extends object> {
     }
 
     oneWayBind(prop: keyof T) {
-        return (el: HTMLElement, elementProp: string) => {
-            if (elementProp === "r-text") {
-                watchful(() => (el as any).textContent = this.getValue(prop as string));
-            }
+        const specialProps = ["textContent", "innerHTML", "value"];
 
-            else if (elementProp === "r-html") {
-                watchful(() => (el as any).innerHTML = this.getValue(prop as string));
+        return (el: HTMLElement, elementProp: string) => {
+            if (specialProps.includes(elementProp)) {
+                watchful(() => (el as any)[elementProp] = this.getValue(prop as string));
             }
 
             else {
@@ -53,15 +51,15 @@ export class Model<T extends object> {
     twoWayBind(prop: keyof T) {
         return (el: HTMLInputElement) => {
             // Bind from store change:
-            watchful(() => (el as any).value = this.getValue(prop as string));
+            this.oneWayBind(prop)(el, "value");
 
             // Bind from input change:
             el.addEventListener("change", () => this.setValue(prop as keyof T & string, el.value as any));
         }
     }
 
-    listBind(prop: keyof T) {
-        
+    listBind(template: HTMLTemplateElement) {
+
     }
 
     watch(handler: (data: T) => any) {

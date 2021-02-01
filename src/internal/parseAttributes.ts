@@ -19,6 +19,14 @@ export function parseAttributes<T extends object>(el: HTMLElement, model: Model<
             model.oneWayBind(value as keyof T)(el, propName);
         }
 
+        else if (key === "r-text") {
+            model.oneWayBind(value as keyof T)(el, "textContent");
+        }
+
+        else if (key === "r-html") {
+            model.oneWayBind(value as keyof T)(el, "innerHTML");
+        }
+
         else if (key === "r-model") {
             model.twoWayBind(value as keyof T)(el as HTMLInputElement);
         }
