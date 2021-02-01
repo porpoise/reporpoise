@@ -60,6 +60,10 @@ export class Model<T extends object> {
         }
     }
 
+    listBind(prop: keyof T) {
+        
+    }
+
     watch(handler: (data: T) => any) {
         watchful(() => handler(this.data));
     }
