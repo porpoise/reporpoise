@@ -38,7 +38,6 @@ export function parseAttributes<T extends object>(el: HTMLElement, model: Model<
 
         // List rendering:
         else if (key === "r-for" && el instanceof HTMLTemplateElement) {
-            console.log(value);
             const [iteratorName, listName] = value.split(":");
             const [itemName, indexName] = iteratorName.split(",");
 

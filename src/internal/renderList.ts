@@ -1,6 +1,7 @@
 import { watchful } from "../reactivity/watchful";
 import { Model } from "../dom/Model";
 import { list } from "src/reactivity/list";
+import { getNodeAttributes } from "./getNodeAttributes";
 
 export interface ITemplateData {
     item: string, 
@@ -8,11 +9,15 @@ export interface ITemplateData {
     list: string
 }
 
-export function renderList<T extends object>(model: Model<T>, template: HTMLTemplateElement, templateData: ITemplateData) {\
+export function renderList<T extends object>(model: Model<T>, template: HTMLTemplateElement, templateData: ITemplateData) {
     const listContainer = document.createElement("div");
     template.parentNode?.insertBefore(listContainer, template);
 
-    console.log("renderlist", { template, templateData, parent: template.parentNode });
+    Object.entries(getNodeAttributes(template)).forEach(([key, value]) => {
+        if (!key.startsWith("r-")) {
+            listContainer.setAttribute(key, value);
+        }
+    });
 
     // Convert the model into a bunch of computed functions to use in the underlyingModels:
     const modelComputedCopy = Object.create(null);
@@ -32,7 +37,6 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
         });
 
         const clone = template.content.firstElementChild && template.content.firstElementChild.cloneNode(true);
-        console.log(clone);
 
         if (clone) {
             if (listContainer.childNodes[index]) {
