@@ -30,9 +30,9 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
         const clone = (template.content.firstElementChild as Node).cloneNode(true) as HTMLElement;
         listContainer.appendChild(clone);
 
-        // Use a watcher to autoupdate the
+        // Use a watcher to autoupdate the rendered content:
         watchful(() => {
-            new Model({ 
+            const internalModel = new Model({ 
                 data: {
                     ...modelComputedCopy,
                     // Dynamic property, so that nested values update without full renders:
@@ -41,7 +41,10 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                 },
 
                 methods: {}
-            }).mount(clone);
+            });
+
+            internalModel.mount(clone);
+            console.log({ internalModel, clone });
         });
     }
 

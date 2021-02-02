@@ -7,6 +7,11 @@ export function mountModel<T extends object>(model: Model<T>, el: HTMLElement) {
     // Remove the attribute after parse to be spec-compliant:
     const elementsToParse = el.querySelectorAll("[r]");
 
+    if (el.hasAttribute("r")) {
+        el.removeAttribute("r");
+        parseAttributes(el, model);
+    }
+
     elementsToParse.forEach(node => {
         node.removeAttribute("r");
 
