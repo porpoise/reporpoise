@@ -2,14 +2,15 @@
 import { stateful } from "./stateful";
 import { getDependentHandler } from "./watchful";
 
-interface IListTemplate {
-    template: HTMLTemplateElement,
-    target: DocumentFragment
-}
+export type MethodWatcher<T> = (methodName: string & keyof T[]) => any;
 
-export function list<T>(...arr: T[]): T[] {
+export type ReactiveList<T> = T[] & {
+    watchMethod(handler: MethodWatcher<T>): void;
+};
+
+export function list<T>(...arr: T[]): ReactiveList<T> {
     const dependencies: Record<string, Set<Function>> = Object.create(null);
-    const templates: IListTemplate[] = [];
+    const methodWatchers: Set<MethodWatcher<T>> = new Set();
 
     const reactiveArray: T[] = arr.map(item => {
         if (Array.isArray(item)) return list(item);
@@ -17,17 +18,25 @@ export function list<T>(...arr: T[]): T[] {
         else return item;
     });
 
-    return new Proxy(reactiveArray, {
+    return new Proxy(reactiveArray as ReactiveList<T>, {
         get(target, key: string) {
             // JSONify the list on toString()
             if (key === "toString") {
                 return () => JSON.stringify(target);
             }
 
+            // Add a method watch (listen for push/pop/...):
+            if (key === "watchMethod") {
+                return (handler: MethodWatcher<T>) => methodWatchers.add(handler);
+            }
+
             // Symbol return early to prevent errors:
-            else if (typeof key === "symbol") {
+            if (typeof key === "symbol") {
                 return target[key];
             }
+
+            // Length:
+            if (key === "length") { return target.length; }
 
             // Allow reactivity if the key is array item:
             const isValidIndex = 
@@ -36,7 +45,7 @@ export function list<T>(...arr: T[]): T[] {
                 Number(key) >= 0 && // Not negative
                 key in target; // Exists on array
 
-            if (isValidIndex || key === "length") {
+            if (isValidIndex) {
                 // Make sure dependency array exists:
                 if (!(dependencies[key] instanceof Set)) {
                     dependencies[key] = new Set<Function>();
@@ -51,15 +60,11 @@ export function list<T>(...arr: T[]): T[] {
                 return target[key as any];
             }
 
-            else if (typeof target[key as any] === "function") {
+            // Add change watcher to push/pop/... methods:
+            if (typeof target[key as any] === "function") {
                 return (...args: any[]) => {
-                    const oldLength = Number(target.length);
                     const value = (target[key as any] as any)(...args);
-
-                    if (oldLength !== target.length) {
-                        dependencies.length.forEach(handler => handler());
-                    }
-
+                    methodWatchers.forEach(handler => handler(key as string & keyof T[]));
                     return value;
                 };
             }
@@ -77,15 +82,17 @@ export function list<T>(...arr: T[]): T[] {
                 return false;
             }
 
-            // Set the value:
+            // Set the value (make it reactive list):
             if (Array.isArray(value)) {
                 target[key] = list(...value) as any;
             }
 
+            // Set the value (make it reactive object):
             else if (typeof value === "object") {
                 target[key] = stateful(value);
             }
 
+            // Set the value (primitive):
             else {
                 // Modify value:
                 target[key] = value;

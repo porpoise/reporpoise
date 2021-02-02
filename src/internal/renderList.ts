@@ -1,6 +1,7 @@
 import { watchful } from "../reactivity/watchful";
 import { Model } from "../dom/Model";
 import { getNodeAttributes } from "./getNodeAttributes";
+import { ReactiveList } from "../reactivity/list";
 
 export interface ITemplateData {
     item: string, 
@@ -24,8 +25,8 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
     const modelComputedCopy = Object.create(null);
     Object.keys(model.data).forEach(key => modelComputedCopy[key] = () => model.data[key as keyof T]);
 
-    // Create clones:
-    for (let i = 0; i < (model.data[templateData.list as keyof T] as any).length; i++) {
+    // Function to create list item:
+    const renderIndex = (index: number) => {
         const clone = (template.content.firstElementChild as Node).cloneNode(true) as HTMLElement;
         listContainer.appendChild(clone);
 
@@ -35,12 +36,33 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                 data: {
                     ...modelComputedCopy,
                     // Dynamic property, so that nested values update without full renders:
-                    [templateData.item]: () => (model.data[templateData.list as keyof T] as any)[i],
-                    [templateData.index]: i
+                    [templateData.item]: () => model.getValue(templateData.list)[index],
+                    [templateData.index]: index
                 },
 
                 methods: {}
             }).mount(clone);
         });
     }
+
+    // Create clones:
+    for (let i = 0; i < model.getValue(templateData.list).length; i++) {
+        renderIndex(i);
+    }
+
+    (model.getValue(templateData.list) as ReactiveList<any>).watchMethod(methodName => {
+        switch (methodName) {
+            case "push":
+                if (model.getValue(templateData.list).length !== listContainer.childNodes.length) {
+                    renderIndex(model.getValue(templateData.list).length - 1);
+                }
+                break;
+
+            case "pop":
+                if (model.getValue(templateData.list).length !== listContainer.childNodes.length) {
+                    listContainer.lastChild && listContainer.removeChild(listContainer.lastChild);
+                }
+                break;
+        }
+    });
 }
