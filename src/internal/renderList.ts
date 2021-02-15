@@ -44,7 +44,6 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
             });
 
             internalModel.mount(clone);
-            console.log({ internalModel, clone });
         });
     }
 
@@ -53,7 +52,7 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
         renderIndex(i);
     }
 
-    (model.getValue(templateData.list) as ReactiveList<any>).watchMethod(methodName => {
+    (model.getValue(templateData.list) as ReactiveList<any>).watchMethod((methodName, args) => {
         switch (methodName) {
             case "push":
                 if (model.getValue(templateData.list).length !== listContainer.childNodes.length) {
@@ -65,6 +64,9 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                 if (model.getValue(templateData.list).length !== listContainer.childNodes.length) {
                     listContainer.lastChild && listContainer.removeChild(listContainer.lastChild);
                 }
+                break;
+            
+            case "splice":
                 break;
         }
     });

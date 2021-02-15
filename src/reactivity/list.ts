@@ -2,7 +2,7 @@
 import { stateful } from "./stateful";
 import { getDependentHandler } from "./watchful";
 
-export type MethodWatcher<T> = (methodName: string & keyof T[]) => any;
+export type MethodWatcher<T> = (methodName: string & keyof T[], args: any[]) => any;
 
 export type ReactiveList<T> = T[] & {
     watchMethod(handler: MethodWatcher<T>): void;
@@ -64,7 +64,7 @@ export function list<T>(...arr: T[]): ReactiveList<T> {
             if (typeof target[key as any] === "function") {
                 return (...args: any[]) => {
                     const value = (target[key as any] as any)(...args);
-                    methodWatchers.forEach(handler => handler(key as string & keyof T[]));
+                    methodWatchers.forEach(handler => handler(key as string & keyof T[], args));
                     return value;
                 };
             }
