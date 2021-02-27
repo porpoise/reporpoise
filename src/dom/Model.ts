@@ -3,16 +3,27 @@ import { mountModel } from "../internal/mountModel";
 import { stateful } from "../reactivity/stateful";
 import { watchful } from "../reactivity/watchful";
 
+type EventHandlerT<T> = (data: T, e?: Event) => void;
+
 interface IModelConfig<T> {
     data: T;
-    methods: Record<string, (data: T, e?: Event) => any>;
+    events: Record<string, (
+        EventHandlerT<T> | // Events
+        Record<string, EventHandlerT<T>> // Scoped Events
+    )>;
 }
 
 export class Model<T extends object> {
     data: T;
-    methods: Record<string, (e?: Event) => any> = {};
+    events: Record<string, (
+        (e?: Event) => void | // Events
+        Record<string, (e?: Event) => void> // Scoped Events
+    )> = {};
+    scopedEvents: Record<string, Record<string, EventHandlerT<T>>> = {};
 
-    constructor({ data, methods }: IModelConfig<T>) {
+    constructor({ data, events }: IModelConfig<T>) {
+        events = events || {};
+
         const staticData: T = Object.create(null);
         const dynamicProperties: string[] = [];
         Object.entries(data).forEach(([key, value]) => {
@@ -30,8 +41,18 @@ export class Model<T extends object> {
             watchful(() => this.data[key as keyof T] = (data[key as keyof T] as any)(this.data));
         });
         
-        Object.entries(methods || {}).forEach(([name, method]) => {
-            this.methods[name] = (e?: Event) => method(this.data, e);
+        Object.entries(events || {}).forEach(([name, method]) => {
+            if (typeof method === "function") {
+                this.events[name] = (e?: Event) => method(this.data, e);
+            }
+
+            else if (typeof method === "object") {
+                // Create scoped event object:
+                this.scopedEvents[name] = Object.create(null);
+                Object.entries<EventHandlerT<T>>(method).forEach(([scopedName, scopedMethod]) => {
+                    this.scopedEvents[name][scopedName] = scopedMethod;
+                });
+            }
         });
     }
 

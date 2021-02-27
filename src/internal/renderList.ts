@@ -14,10 +14,17 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
     const listContainer = document.createElement("div");
     template.parentNode?.insertBefore(listContainer, template);
 
+    let eventsAttribute: string | null = null;
+
     // Add all spec-compliant attributes:
     Object.entries(getNodeAttributes(template)).forEach(([key, value]) => {
         if (!key.startsWith("r-")) {
             listContainer.setAttribute(key, value);
+        }
+
+        else if (key === "r-events") {
+            eventsAttribute = value;
+            listContainer.removeAttribute(key);
         }
     });
 
@@ -40,8 +47,13 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                     [templateData.index]: index
                 },
 
-                methods: {}
+                events: eventsAttribute ? 
+                    model.scopedEvents[eventsAttribute] : 
+                    {}
             });
+
+            //@ts-ignore
+            window.XD = internalModel;
 
             internalModel.mount(clone);
         });

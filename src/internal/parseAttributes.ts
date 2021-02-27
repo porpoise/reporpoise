@@ -12,7 +12,7 @@ export function parseAttributes<T extends object>(el: HTMLElement, model: Model<
         // Event handling:
         if (key.startsWith("@")) {
             const eventName = key.replace("@", "").trim();
-            el.addEventListener(eventName, e => model.methods[value](e));
+            el.addEventListener(eventName, e => model.events[value](e));
         }
 
         // One way binding:
