@@ -3,7 +3,7 @@ import { mountModel } from "../internal/mountModel";
 import { stateful } from "../reactivity/stateful";
 import { watchful } from "../reactivity/watchful";
 
-type EventHandlerT<T> = (data: T, e?: Event) => void;
+export type EventHandlerT<T> = (data: T, e?: Event, item?: any) => void;
 
 interface IModelConfig<T> {
     data: T;
@@ -90,6 +90,7 @@ export class Model<T extends object> {
 
     mount(el: HTMLElement) {
         mountModel<T>(this, el);
+        return this;
     }
 
     getValue(prop: string) {

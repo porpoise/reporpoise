@@ -1,5 +1,5 @@
 import { watchful } from "../reactivity/watchful";
-import { Model } from "../dom/Model";
+import { EventHandlerT, Model } from "../dom/Model";
 import { getNodeAttributes } from "./getNodeAttributes";
 import { ReactiveList } from "../reactivity/list";
 
@@ -21,7 +21,13 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
         if (!key.startsWith("r-")) {
             listContainer.setAttribute(key, value);
         }
+        
+        // Unique key prop:
+        else if (key === "r-tag") {
 
+        }
+
+        // Scoped events:
         else if (key === "r-events") {
             eventsAttribute = value;
             listContainer.removeAttribute(key);
@@ -31,6 +37,18 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
     // Convert the model into a bunch of computed functions to use in the underlying models:
     const modelComputedCopy = Object.create(null);
     Object.keys(model.data).forEach(key => modelComputedCopy[key] = () => model.data[key as keyof T]);
+
+    const getMethodsFromModel = () => {
+        if (!eventsAttribute) return {};
+
+        const methods: Record<string, EventHandlerT<any>> = {};
+
+        Object.entries(model.scopedEvents[eventsAttribute]).forEach(([ name, method ]) => {
+            methods[name] = (data, e) => method(model.data, e, data);
+        });
+
+        return methods;
+    }
 
     // Function to create list item:
     const renderIndex = (index: number) => {
@@ -47,9 +65,7 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                     [templateData.index]: index
                 },
 
-                events: eventsAttribute ? 
-                    model.scopedEvents[eventsAttribute] : 
-                    {}
+                events: getMethodsFromModel()
             });
 
             //@ts-ignore
