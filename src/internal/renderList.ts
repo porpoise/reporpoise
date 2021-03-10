@@ -15,6 +15,7 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
     template.parentNode?.insertBefore(listContainer, template);
 
     let eventsAttribute: string | null = null;
+    let uniqueTag:  string | null = null;
 
     // Add all spec-compliant attributes:
     Object.entries(getNodeAttributes(template)).forEach(([key, value]) => {
@@ -24,7 +25,7 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
         
         // Unique key prop:
         else if (key === "r-tag") {
-
+            uniqueTag = value;
         }
 
         // Scoped events:
@@ -33,6 +34,10 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
             listContainer.removeAttribute(key);
         }
     });
+
+    if (!uniqueTag) {
+        throw new Error("List rendering requires a unique tag (r-tag) attribute to prevent ambiguous data bindings.");
+    }
 
     // Convert the model into a bunch of computed functions to use in the underlying models:
     const modelComputedCopy = Object.create(null);
@@ -68,10 +73,14 @@ export function renderList<T extends object>(model: Model<T>, template: HTMLTemp
                 events: getMethodsFromModel()
             });
 
+            internalModel.data._tag = internalModel.getValue(uniqueTag as string);
+
             //@ts-ignore
             window.XD = internalModel;
 
             internalModel.mount(clone);
+
+            clone.dataset.rTag = internalModel.getValue(uniqueTag as string);
         });
     }
 
