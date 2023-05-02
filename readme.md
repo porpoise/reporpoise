@@ -23,7 +23,7 @@ new Model({
     data: {
         count: 0
     },
-    evemts: {
+    events: {
         increaseCount(data, e) { data.count++; },
         decreaseCount(data, e) { data.count--; }
     }
